@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - ClosetAI</title>
+  <meta name="description" content="Manage your smart closet, generate outfits, and view style analysis.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Edit Item Modal -->
+  <div id="edit-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Edit Item</h2>
+      <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">Change category or color for this item.</p>
+      
+      <h3 style="margin-bottom: 1rem; font-size: 1rem;">Category</h3>
+      <div class="category-grid" id="edit-category-grid">
+        <div class="cat-item" data-cat="Tops"><i class="fa-solid fa-shirt"></i><span>Top</span></div>
+        <div class="cat-item" data-cat="Shirts"><i class="fa-solid fa-user-tie"></i><span>Shirt</span></div>
+        <div class="cat-item" data-cat="T-shirts"><i class="fa-solid fa-t"></i><span>T-shirt</span></div>
+        <div class="cat-item" data-cat="Pants / Jeans"><i class="fa-solid fa-socks"></i><span>Pants / Jeans</span></div>
+        <div class="cat-item" data-cat="Skirts"><i class="fa-solid fa-chess-knight"></i><span>Skirt</span></div>
+        <div class="cat-item" data-cat="Dresses / Frocks"><i class="fa-solid fa-person-dress"></i><span>Dress</span></div>
+        <div class="cat-item" data-cat="Kurtis / Ethnic wear"><i class="fa-solid fa-om"></i><span>Kurti</span></div>
+        <div class="cat-item" data-cat="Shoes"><i class="fa-solid fa-shoe-prints"></i><span>Shoes / Slippers</span></div>
+        <div class="cat-item" data-cat="Bags"><i class="fa-solid fa-bag-shopping"></i><span>Bag</span></div>
+        <div class="cat-item" data-cat="Jewellery"><i class="fa-solid fa-gem"></i><span>Jewellery</span></div>
+      </div>
+      
+      <div class="input-group">
+        <label>Primary Color</label>
+        <select id="edit-color">
+          <option value="Black">Black</option>
+          <option value="White">White</option>
+          <option value="Grey">Grey</option>
+          <option value="Red">Red</option>
+          <option value="Blue">Blue</option>
+          <option value="Green">Green</option>
+          <option value="Yellow">Yellow</option>
+          <option value="Orange">Orange</option>
+          <option value="Pink">Pink</option>
+          <option value="Beige">Beige</option>
+          <option value="Brown">Brown</option>
+          <option value="Cream">Cream</option>
+          <option value="Purple">Purple</option>
+          <option value="Maroon">Maroon</option>
+          <option value="Navy">Navy</option>
+        </select>
+      </div>
+      
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+        <button id="cancel-edit-btn" class="btn-secondary">Cancel</button>
+        <button id="save-edit-btn" class="btn-primary">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refresh Data Modal -->
+  <div id="refresh-modal" class="onboarding-container" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2000; background: rgba(0,0,0,0.8);">
+    <div class="glass-card" style="margin: auto; display: flex; flex-direction: column; justify-content: center; max-width: 400px; padding: 2rem;">
+      <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Saved Wardrobe Found</h2>
+      <p style="margin-bottom: 2rem; font-size: 1rem;">Do you want to keep your saved wardrobe or clear all items?</p>
+      <div style="display: flex; gap: 1rem; flex-direction: column;">
+        <button id="keep-data-btn" class="btn-primary">Keep My Clothes</button>
+        <button id="clear-data-btn" class="btn-secondary" style="color: var(--error-color);">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="logo-small"><i class="fa-solid fa-wand-magic-sparkles"></i> ClosetAI</div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item active" data-target="upload-section">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Upload Clothes</span>
+        </li>
+        <li class="nav-item" data-target="closet-section">
+          <i class="fa-solid fa-shirt"></i>
+          <span>My Closet</span>
+        </li>
+        <li class="nav-item" data-target="generator-section">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>Outfit Generator</span>
+        </li>
+        <li class="nav-item" data-target="daily-section">
+          <i class="fa-solid fa-calendar-day"></i>
+          <span>Daily Outfit</span>
+        </li>
+        <li class="nav-item" data-target="favorites-section">
+          <i class="fa-solid fa-heart"></i>
+          <span>Favorites</span>
+        </li>
+        <li class="nav-item" data-target="analysis-section">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span>Shopping Suggestions</span>
+        </li>
+        <li class="nav-item" data-target="feedback-section">
+          <i class="fa-solid fa-comment-dots"></i>
+          <span>Feedback</span>
+        </li>
+        <li class="nav-item" data-target="profile-section">
+          <i class="fa-solid fa-user"></i>
+          <span>Profile</span>
+        </li>
+      </ul>
+      
+      <div class="user-profile">
+        <div class="avatar" id="user-avatar">?</div>
+        <div class="user-info">
+          <div style="font-weight: 600; font-size: 0.9rem;" id="display-name">User</div>
+          <button id="relogin-btn" style="background: none; border: none; color: var(--accent-color); font-size: 0.8rem; cursor: pointer; text-decoration: underline;">Relogin / Logout</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- Upload Section -->
+      <section id="upload-section" class="section active">
+        <div class="header">
+          <h1>Add to Wardrobe</h1>
+        </div>
+        
+        <div class="upload-area" onclick="document.getElementById('file-upload').click()">
+          <i class="fa-solid fa-camera upload-icon"></i>
+          <h3>Click to upload or take a photo</h3>
+          <p style="color: var(--text-secondary); margin-top: 10px;">Supported formats: JPG, PNG</p>
+          <input type="file" id="file-upload" accept="image/*" capture="environment" style="display: none;">
+        </div>
+        
+        <div id="upload-confirm" style="display: none; background: var(--surface-light); padding: 2rem; border-radius: var(--border-radius);">
+          <div style="text-align: center;">
+            <img id="preview-image" src="" alt="Preview" style="max-height: 200px; border-radius: 8px; margin-bottom: 1rem;">
+          </div>
+          
+          <h2 style="margin-bottom: 0.5rem;">What is this item?</h2>
+          <p id="smart-suggestion" style="color: var(--success-color); margin-bottom: 1.5rem; font-weight: 500;"><i class="fa-solid fa-wand-magic-sparkles"></i> We think this is: Top</p>
+          
+          <div class="category-grid" id="upload-category-grid">
+            <div class="cat-item" data-cat="Tops"><i class="fa-solid fa-shirt"></i><span>Top</span></div>
+            <div class="cat-item" data-cat="Shirts"><i class="fa-solid fa-user-tie"></i><span>Shirt</span></div>
+            <div class="cat-item" data-cat="T-shirts"><i class="fa-solid fa-t"></i><span>T-shirt</span></div>
+            <div class="cat-item" data-cat="Pants / Jeans"><i class="fa-solid fa-socks"></i><span>Pants / Jeans</span></div>
+            <div class="cat-item" data-cat="Skirts"><i class="fa-solid fa-chess-knight"></i><span>Skirt</span></div>
+            <div class="cat-item" data-cat="Dresses / Frocks"><i class="fa-solid fa-person-dress"></i><span>Dress</span></div>
+            <div class="cat-item" data-cat="Kurtis / Ethnic wear"><i class="fa-solid fa-om"></i><span>Kurti</span></div>
+            <div class="cat-item" data-cat="Shoes"><i class="fa-solid fa-shoe-prints"></i><span>Shoes / Slippers</span></div>
+            <div class="cat-item" data-cat="Bags"><i class="fa-solid fa-bag-shopping"></i><span>Bag</span></div>
+            <div class="cat-item" data-cat="Jewellery"><i class="fa-solid fa-gem"></i><span>Jewellery</span></div>
+          </div>
+          
+          <div class="input-group">
+            <label>Primary Color</label>
+            <select id="upload-color">
+              <option value="Black">Black</option>
+              <option value="White">White</option>
+              <option value="Grey">Grey</option>
+              <option value="Red">Red</option>
+              <option value="Blue">Blue</option>
+              <option value="Green">Green</option>
+              <option value="Yellow">Yellow</option>
+              <option value="Orange">Orange</option>
+              <option value="Pink">Pink</option>
+              <option value="Beige">Beige</option>
+              <option value="Brown">Brown</option>
+              <option value="Cream">Cream</option>
+              <option value="Purple">Purple</option>
+              <option value="Maroon">Maroon</option>
+              <option value="Navy">Navy</option>
+            </select>
+          </div>
+          
+          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button class="btn-secondary" id="cancel-upload-btn">Cancel</button>
+            <button class="btn-primary" id="confirm-save-btn">Confirm & Save</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Closet Section -->
+      <section id="closet-section" class="section">
+        <div class="header">
+          <h1>My Closet</h1>
+          <span id="total-items" style="color: var(--text-secondary);">0 items</span>
+        </div>
+        
+        <div class="filter-tabs" id="closet-filters">
+          <div class="tab active" data-filter="All">All</div>
+          <div class="tab" data-filter="Tops">Tops</div>
+          <div class="tab" data-filter="Bottoms">Bottoms</div>
+          <div class="tab" data-filter="Dresses">Dresses</div>
+          <div class="tab" data-filter="Footwear">Footwear</div>
+          <div class="tab" data-filter="Accessories">Accessories</div>
+        </div>
+        
+        <div class="items-grid" id="closet-grid">
+          <!-- Items will be injected here -->
+        </div>
+      </section>
+
+      <!-- Outfit Generator Section -->
+      <section id="generator-section" class="section">
+        <div class="header">
+          <h1>Outfit Generator</h1>
+        </div>
+        
+        <div style="background: var(--surface-color); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+          <h3 style="margin-bottom: 1rem;">Select Occasion & Season</h3>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <select id="gen-occasion" style="width: auto; flex: 1; min-width: 150px;">
+              <option value="Casual">Casual</option>
+              <option value="College">College</option>
+              <option value="Office">Office</option>
+              <option value="Party">Party</option>
+              <option value="Travel">Travel</option>
+              <option value="Cafe">Cafe</option>
+              <option value="Date">Date</option>
+              <option value="Interview">Interview</option>
+              <option value="Birthday">Birthday</option>
+              <option value="Trip Planner">Trip Planner</option>
+            </select>
+            
+            <select id="gen-season" style="width: auto; flex: 1; min-width: 150px;">
+              <option value="Any">Any Season</option>
+              <option value="Summer">Summer</option>
+              <option value="Winter">Winter</option>
+              <option value="Rainy">Rainy</option>
+            </select>
+            
+            <button class="btn-primary" id="generate-btn" style="width: auto; padding: 1rem 2rem;">Generate Smart Outfits</button>
+          </div>
+        </div>
+        
+        <div class="outfit-grid" id="generated-outfits">
+          <!-- Outfits will be injected here -->
+        </div>
+      </section>
+
+      <!-- Daily Outfit Section -->
+      <section id="daily-section" class="section">
+        <div class="header">
+          <h1>Outfit of the Day</h1>
+        </div>
+        
+        <div class="daily-outfit-container" style="padding: 2rem;">
+          <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem; text-align: center;">Ready to slay today?</h2>
+          
+          <div style="margin: 1.5rem auto; text-align: center; max-width: 400px;">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">What do you want to wear today?</label>
+            <select id="daily-preference" style="width: 100%; padding: 0.8rem; border-radius: 8px; background: var(--surface-color); color: white; border: 1px solid var(--surface-light);">
+              <option value="Any">Surprise Me</option>
+              <option value="Shirt">Shirt</option>
+              <option value="T-shirt">T-shirt</option>
+              <option value="Pants / Jeans">Jeans / Pants</option>
+              <option value="Skirts">Skirt</option>
+              <option value="Dresses / Frocks">Dress</option>
+              <option value="Kurtis / Ethnic wear">Kurti</option>
+            </select>
+          </div>
+          
+          <div class="outfit-grid" id="ootd-display" style="margin-top: 1rem;">
+            <!-- OOTD options will be injected here -->
+          </div>
+          
+          <div style="text-align: center;">
+            <button class="btn-secondary" id="refresh-ootd" style="margin-top: 2rem; max-width: 250px;">
+              <i class="fa-solid fa-rotate-right"></i> Regenerate Outfits
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Favorites Section -->
+      <section id="favorites-section" class="section">
+        <div class="header">
+          <h1>My Favorites</h1>
+        </div>
+        <div class="outfit-grid" id="favorites-grid">
+          <!-- Favorite outfits will be injected here -->
+        </div>
+      </section>
+
+      <!-- Analysis Section -->
+      <section id="analysis-section" class="section">
+        <div class="header">
+          <h1>Shopping Suggestions</h1>
+        </div>
+        
+        <div style="background: var(--surface-color); padding: 2rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+          <h3 style="margin-bottom: 1rem;">Style Feedback</h3>
+          <p id="style-feedback" style="color: var(--text-secondary); line-height: 1.6;">
+            Add more items to unlock AI style insights.
+          </p>
+        </div>
+        
+        <h3 style="margin-bottom: 1rem; margin-top: 2rem;">Missing Essentials</h3>
+        <div class="shopping-suggestions" id="shop-suggestions">
+          <!-- Shop cards will be injected here -->
+        </div>
+      </section>
+      
+      <!-- Feedback Section -->
+      <section id="feedback-section" class="section">
+        <div class="header">
+          <h1>Feedback</h1>
+        </div>
+        
+        <div class="upload-form" style="max-width: 600px;">
+          <form id="feedback-form">
+            <div class="input-group">
+              <label>Rate Your Experience (1-5)</label>
+              <select id="feedback-rating" required>
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Good</option>
+                <option value="3">3 - Average</option>
+                <option value="2">2 - Poor</option>
+                <option value="1">1 - Terrible</option>
+              </select>
+            </div>
+            
+            <div class="input-group">
+              <label>Any Comments or Suggestions?</label>
+              <textarea id="feedback-comment" rows="5" placeholder="Tell us how we can improve ClosetAI..." style="width: 100%; padding: 1rem; background-color: var(--surface-color); border: 1px solid var(--surface-light); border-radius: 8px; color: var(--text-primary); font-family: 'Outfit'; resize: vertical;" required></textarea>
+            </div>
+            
+            <button type="submit" class="btn-primary" style="margin-top: 1rem;">Send Feedback</button>
+          </form>
+          
+          <div style="margin-top: 2rem; text-align: center; border-top: 1px solid var(--surface-light); padding-top: 1.5rem;">
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">Want to give detailed feedback?</p>
+            <a href="https://forms.google.com" target="_blank" style="text-decoration: none; color: var(--accent-color); font-weight: bold;"><i class="fa-solid fa-up-right-from-square"></i> Submit Official Feedback Form</a>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Profile Section -->
+      <section id="profile-section" class="section">
+        <div class="header">
+          <h1>Edit Profile</h1>
+        </div>
+        
+        <div class="upload-form" style="max-width: 600px;">
+          <form id="edit-profile-form">
+            <div class="input-group">
+              <label for="edit-gender">Gender</label>
+              <select id="edit-gender" required>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+              </select>
+            </div>
+            
+            <div class="input-group">
+              <label for="edit-bodyType">Body Shape</label>
+              <select id="edit-bodyType" required>
+                <option value="Pear">Pear</option>
+                <option value="Apple">Apple</option>
+                <option value="Hourglass">Hourglass</option>
+                <option value="Rectangle">Rectangle</option>
+                <option value="Triangle">Triangle</option>
+                <option value="Inverted Triangle">Inverted Triangle</option>
+                <option value="Oval">Oval</option>
+              </select>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+              <div class="input-group" style="flex: 1;">
+                <label for="edit-height">Height (cm)</label>
+                <input type="number" id="edit-height" min="120" max="220" required>
+              </div>
+              
+              <div class="input-group" style="flex: 1;">
+                <label for="edit-age">Age</label>
+                <input type="number" id="edit-age" min="10" max="100" required>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn-primary" style="margin-top: 1rem;">Save Profile</button>
+          </form>
+        </div>
+      </section>
+      
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
